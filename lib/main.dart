@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:safelane/authentication/google_auth.dart';
 import 'package:safelane/authentication/login.dart';
 import 'package:safelane/tabs/home.dart';
 // import 'package:safelane/tabs/home.dart';
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
           textTheme: GoogleFonts.poppinsTextTheme(
             Theme.of(context).textTheme,
           )),
-      home: const HomePage(),
+      home: const GoogleAuth(),
     );
   }
 }
