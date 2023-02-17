@@ -1,12 +1,13 @@
 // ignore_for_file: library_private_types_in_public_api, avoid_print
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:safelane/maps/line_string.dart';
 import 'package:safelane/maps/maps_helper.dart';
-import 'package:safelane/maps/secrets.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:custom_marker/marker_icon.dart';
 import 'dart:math' show cos, sqrt, asin;
 
 class MapView extends StatefulWidget {
@@ -20,7 +21,7 @@ class MapView extends StatefulWidget {
 
 class _MapViewState extends State<MapView> {
   final CameraPosition _initialLocation =
-      const CameraPosition(target: LatLng(0.0, 0.0));
+      const CameraPosition(target: LatLng(28.7041, 77.1025));
   late GoogleMapController mapController;
 
   late Position _currentPosition;
@@ -36,6 +37,7 @@ class _MapViewState extends State<MapView> {
   String _destinationAddress = '';
   String? _placeDistance;
   List<Location> _destinationPosition = [];
+  bool isFirstSearch = true;
 
   var distance = 0.0;
 
@@ -101,7 +103,7 @@ class _MapViewState extends State<MapView> {
         .then((Position position) async {
       setState(() {
         _currentPosition = position;
-        print('CURRENT POS: $_currentPosition');
+        // print('CURRENT POS: $_currentPosition');
         mapController.animateCamera(
           CameraUpdate.newCameraPosition(
             CameraPosition(
@@ -203,15 +205,197 @@ class _MapViewState extends State<MapView> {
   }
 
   Future<dynamic> showRoute() async {
+    if (startAddressController.text.isEmpty ||
+        destinationAddressController.text.isEmpty) {
+      return const AlertDialog(
+        content: Text('Please enter start and end address.'),
+      );
+    }
     await addDestinationMark();
     calculateDistance();
     getPolyPoints();
+  }
+
+  Future getAllPotholes() async {
+    QuerySnapshot querySnapshot =
+        await FirebaseFirestore.instance.collection('potholes').get();
+
+    for (int i = 0; i < querySnapshot.docs.length; i++) {
+      markers.add(Marker(
+        markerId: MarkerId(querySnapshot.docs[i]['downloadLink']),
+        position: LatLng(querySnapshot.docs[i]['latitude'],
+            querySnapshot.docs[i]['longitude']),
+        icon: await MarkerIcon.pictureAsset(
+            assetPath: 'assets\images\logo.png', width: 80, height: 100),
+        onTap: () {
+          showModalBottomSheet(
+            
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              context: context,
+              builder: (context) {
+                return Wrap(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(Get.height / 50),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.network(
+                                  querySnapshot.docs[i]['downloadLink'])),
+                          SizedBox(height: Get.height / 30),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                querySnapshot.docs[i]['place'],
+                                style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              IconButton(
+                                  onPressed: () {
+                                    Get.defaultDialog(
+                                        title: 'Pothole Details',
+                                        content: Column(
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  'Latitude',
+                                                  style: TextStyle(
+                                                      color:
+                                                          Colors.grey.shade900,
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.normal),
+                                                ),
+                                                const SizedBox(width: 10),
+                                                Text(
+                                                  querySnapshot.docs[i]
+                                                          ['latitude']
+                                                      .toString(),
+                                                  style: TextStyle(
+                                                      color:
+                                                          Colors.grey.shade700,
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.normal),
+                                                ),
+                                              ],
+                                            ),
+                                            Divider(),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  'Longitude',
+                                                  style: TextStyle(
+                                                      color:
+                                                          Colors.grey.shade900,
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.normal),
+                                                ),
+                                                const SizedBox(width: 10),
+                                                Text(
+                                                  querySnapshot.docs[i]
+                                                          ['longitude']
+                                                      .toString(),
+                                                  style: TextStyle(
+                                                      color:
+                                                          Colors.grey.shade700,
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.normal),
+                                                ),
+                                              ],
+                                            ),
+                                            Divider(),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  'Obstacle Type',
+                                                  style: TextStyle(
+                                                      color:
+                                                          Colors.grey.shade900,
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.normal),
+                                                ),
+                                                const SizedBox(width: 10),
+                                                Text(
+                                                  querySnapshot.docs[i]
+                                                          ['obstacleType']
+                                                      .toString(),
+                                                  style: TextStyle(
+                                                      color:
+                                                          Colors.grey.shade700,
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.normal),
+                                                ),
+                                              ],
+                                            ),
+                                            Divider(),
+                                            Container(
+                                              child: Row(
+                                                children: [
+                                                  Text(
+                                                    'By',
+                                                    style: TextStyle(
+                                                        color:
+                                                            Colors.grey.shade900,
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.normal),
+                                                  ),
+                                                  const SizedBox(width: 10),
+                                                  Text(
+                                                    querySnapshot.docs[i]
+                                                            ['uploadedBy']
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                        color:
+                                                            Colors.grey.shade700,
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.normal),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ));
+                                  },
+                                  icon: const Icon(Icons.help_outline))
+                            ],
+                          ),
+                          Text(
+                            querySnapshot.docs[i]['details'],
+                            style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontSize: 16,
+                                fontWeight: FontWeight.normal),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                );
+              });
+        },
+      ));
+    }
   }
 
   @override
   void initState() {
     super.initState();
     _getCurrentLocation();
+    getAllPotholes();
   }
 
   @override
@@ -299,7 +483,7 @@ class _MapViewState extends State<MapView> {
                     ),
                     width: width * 0.9,
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                      padding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
@@ -307,9 +491,9 @@ class _MapViewState extends State<MapView> {
                             'Places',
                             style: TextStyle(fontSize: 20.0),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 10),
                           _textField(
-                              label: 'From',
+                              label: 'Start',
                               hint: 'Choose starting point',
                               prefixIcon: const Icon(Icons.looks_one),
                               suffixIcon: IconButton(
@@ -327,9 +511,9 @@ class _MapViewState extends State<MapView> {
                                   _startAddress = value;
                                 });
                               }),
-                          const SizedBox(height: 7),
+                          const SizedBox(height: 10),
                           _textField(
-                              label: 'To',
+                              label: 'Destination',
                               hint: 'Choose destination',
                               prefixIcon: const Icon(Icons.looks_two),
                               controller: destinationAddressController,
@@ -340,7 +524,7 @@ class _MapViewState extends State<MapView> {
                                   _destinationAddress = value;
                                 });
                               }),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 10),
                           Visibility(
                             visible: _placeDistance == null ? false : true,
                             child: Text(
@@ -351,50 +535,8 @@ class _MapViewState extends State<MapView> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 1),
+                          const SizedBox(height: 5),
                           ElevatedButton(
-                            // onPressed: (
-
-                            //   _startAddress != '' &&
-                            //         _destinationAddress != '')
-                            //     ? () async {
-                            //         startAddressFocusNode.unfocus();
-                            //         desrinationAddressFocusNode.unfocus();
-                            //         setState(() {
-                            //           if (markers.isNotEmpty) markers.clear();
-                            //           if (polylines.isNotEmpty) {
-                            //             polylines.clear();
-                            //           }
-                            //           if (polylineCoordinates.isNotEmpty) {
-                            //             polylineCoordinates.clear();
-                            //           }
-                            //           _placeDistance = null;
-                            //         });
-
-                            //         // _calculateDistance().then((isCalculated) {
-                            //         //   if (isCalculated) {
-                            //         //     ScaffoldMessenger.of(context)
-                            //         //         .showSnackBar(
-                            //         //       const SnackBar(
-                            //         //         content: Text(
-                            //         //             'Distance Calculated Sucessfully'),
-                            //         //       ),
-                            //         //     );
-                            //         //   } else {
-                            //         //     ScaffoldMessenger.of(context)
-                            //         //         .showSnackBar(
-                            //         //       const SnackBar(
-                            //         //         content: Text(
-                            //         //             'Error Calculating Distance'),
-                            //         //       ),
-                            //         //     );
-                            //         //   }
-                            //         // });
-
-                            //         await showRoute();
-                            //         print('Workin');
-                            //       }
-                            //     : null,
                             onPressed: () {
                               showRoute();
                             },
@@ -405,7 +547,7 @@ class _MapViewState extends State<MapView> {
                               ),
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.all(6.0),
+                              padding: const EdgeInsets.all(8.0),
                               child: Text(
                                 'Show Route'.toUpperCase(),
                                 style: const TextStyle(

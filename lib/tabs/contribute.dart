@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -48,7 +50,7 @@ class _ContributeState extends State<Contribute> {
           style: TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 16,
           ),
         ),
         elevation: 0,
@@ -74,7 +76,7 @@ class _ContributeState extends State<Contribute> {
                     )
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 // Column(
                 //   children: [
                 //     Container(
@@ -199,7 +201,7 @@ class _ContributeState extends State<Contribute> {
                   ],
                 ),
                 const SizedBox(
-                  height: 50,
+                  height: 10,
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -207,7 +209,7 @@ class _ContributeState extends State<Contribute> {
                     OutlinedButton(
                       style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.black,
-                          elevation: 10,
+                          elevation: 0,
                           side: const BorderSide(color: Colors.black)),
                       onPressed: () {},
                       child: const Text("Cancel"),
@@ -215,7 +217,7 @@ class _ContributeState extends State<Contribute> {
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
-                        elevation: 10,
+                        elevation: 0,
                       ),
                       onPressed: () {
                         imageController.uploadImage(

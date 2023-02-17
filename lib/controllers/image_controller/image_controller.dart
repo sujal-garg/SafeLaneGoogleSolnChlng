@@ -1,10 +1,13 @@
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:safelane/tabs/home.dart';
 import 'package:uuid/uuid.dart';
 
 class ImageController extends GetxController {
@@ -18,23 +21,41 @@ class ImageController extends GetxController {
     final storageInsance = firebaseStorage.ref();
     final user = FirebaseAuth.instance.currentUser;
 
-    try {
-      storageInsance.child('images/potholes').putFile(image!);
-      downloadLink.value = await storageInsance.getDownloadURL();
+    Get.defaultDialog(
+        title: 'Uploading...',
+        content: const CircularProgressIndicator(),
+        barrierDismissible: true);
 
-      Position currentLocation = await Geolocator.getCurrentPosition(
+    try {
+      final imageName = uuid.v1();
+
+      await storageInsance.child('images/$imageName.png').putFile(image!);
+
+      final downloadLink =
+          await storageInsance.child('images/$imageName.png').getDownloadURL();
+
+      Position currentPosition = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
 
-      cloudFirestore.collection('potholes').doc(uuid.v1()).set({
-        'latitude': currentLocation.latitude,
-        'longitude': currentLocation.longitude,
+      List<Placemark> locations = await placemarkFromCoordinates(
+          currentPosition.latitude, currentPosition.longitude);
+      
+      Placemark currentLocation = locations[0];
+
+      await cloudFirestore.collection('potholes').doc(uuid.v1()).set({
+        'latitude': currentPosition.latitude,
+        'longitude': currentPosition.longitude,
+        'place' : currentLocation,
         'downloadLink': downloadLink,
         'uploadedBy': user!.email,
         'obstacleType': obstacleType,
         'details': detail
       });
+
+      Get.offAll(const HomePage());
+      print('Upload Completed');
     } catch (err) {
-      print('Error while uploading image');
+      print(err);
     }
   }
 }

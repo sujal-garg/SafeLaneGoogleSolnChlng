@@ -80,7 +80,7 @@ class Home extends StatelessWidget {
               child: const Text(
                 "Activities",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
+                textAlign: TextAlign.left,
               ),
             ),
             Activities(size: size)
@@ -198,6 +198,7 @@ class Mystack extends StatefulWidget {
 }
 
 class _MystackState extends State<Mystack> {
+  
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -329,6 +330,7 @@ class _MystackState extends State<Mystack> {
                                 ),
                               ),
                             ),
+                            
                           ],
                         ),
                         SvgPicture.asset("assets/images/directionalAsset.svg"),
@@ -342,10 +344,7 @@ class _MystackState extends State<Mystack> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (_) => const MapView(
-                                      destiAddController: null,
-                                      startAddController: null,
-                                    )),
+                                builder: (_) => const MapView(destiAddController: null, startAddController: null,)),
                           );
                         },
                         style: ElevatedButton.styleFrom(
