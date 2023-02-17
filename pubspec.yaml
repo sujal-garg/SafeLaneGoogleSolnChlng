@@ -27,6 +27,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  after_layout: ^1.2.0
   cloud_firestore: ^4.0.4
   cupertino_icons: ^1.0.2
   custom_marker: ^1.0.0
@@ -45,6 +46,7 @@ dependencies:
   google_maps_flutter: ^2.0.6
   google_sign_in: ^5.4.2
   image_picker: ^0.8.6
+  shared_preferences: ^2.0.17
   uuid: ^3.0.7
 
 dev_dependencies:
@@ -87,6 +89,7 @@ flutter_icons:
 flutter_native_splash:
   color: "#ffffff"
   image: assets/images/splash.png
+  image_size: 70
   # To add assets to your application, add an assets section, like this:
   #   - images/a_dot_ham.jpeg
   # An image asset can refer to one or more resolution-specific "variants", see
